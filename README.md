@@ -57,7 +57,7 @@ A rod-mounted fishing telemetry system that logs casts and distance, detects bit
   - Cast logging rate + distance repeatability
   - IMU alert tuning (latency + false positives)
   - Session storage and retrieval
-  - Optional BLE sync reliability
+  - Optional BLE sync
 
 
 ## Testing
