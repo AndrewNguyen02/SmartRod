@@ -4,7 +4,9 @@
 #include <LiquidCrystal.h>
 #include <math.h>
 #include "Adafruit_BNO08x_RVC.h"
+#include "BluetoothSerial.h"
 
+BluetoothSerial ESP_BT;
 // TCS34725 on I2C
 static const int I2C_SDA = 21;
 static const int I2C_SCL = 22;
@@ -105,7 +107,7 @@ void resetModel() {
 
 void setup() {
   Serial.begin(115200);
-
+  ESP_BT.begin("CYberfish_Rod");
   Wire.begin(I2C_SDA, I2C_SCL);
 
   lcd.begin(16, 2);
@@ -159,6 +161,25 @@ void loop() {
       }
     }
   }
+  // LCD update
+  if (now - lastLcdMs >= lcdMs) {
+    lastLcdMs = now;
+
+    // --- PASTE BLUETOOTH CODE HERE ---
+    ESP_BT.print(forceHold, 2);    // Sends Force to Label 1
+    ESP_BT.print(",");             // Comma for the "Split" block
+    ESP_BT.print(L_out_m, 1);      // Sends Distance to Label 2
+    ESP_BT.print(",");             // Comma for the "Split" block
+    
+    if (forceHold > 0.45) {        // If pull is strong
+      ESP_BT.println("BITE!");     // Sends BITE to Label 3
+    } else {
+      ESP_BT.println("Scanning");  // Sends Scanning to Label 3
+    }
+    // ---------------------------------
+
+    if (forceUpdated) {
+      // ... rest of your existing LCD logic
 
   // Drain UART packets and compute force from the most recent one
   {
