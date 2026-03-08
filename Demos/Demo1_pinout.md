@@ -1,4 +1,4 @@
-# Smart Rod v1 — Full Pinout (ESP32 DevKit V1)
+# Smart Rod Demo 1 — Full Pinout (ESP32 DevKit V1)
 
 ## ESP32 DevKit V1
 - **3V3**: powers TCS34725 + BNO085  
