@@ -5,12 +5,12 @@
 #include <SPI.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_PCD8544.h>
-#include "BluetoothSerial.h" // ADDED: Bluetooth Library
+#include "BluetoothSerial.h" // ADDED
 
-// ==================== Bluetooth Config ====================
-BluetoothSerial SerialBT; // ADDED: Bluetooth Object
+// ==================== Bluetooth Configuration ====================
+BluetoothSerial SerialBT; // ADDED
 unsigned long lastBtTxMs = 0;
-const unsigned long BT_TX_INTERVAL = 250; // Transmit every 250ms
+const unsigned long BT_TX_INTERVAL = 250; // ADDED
 
 // ==================== State Machine ====================
 // ARMED    : IMU active, waiting for cast onset
@@ -281,6 +281,12 @@ static void updateStateMachine(unsigned long now) {
 
 // -------------------- Nokia UI --------------------
 
+// Screen layout:
+//    Row 0 : State
+//    Row 1 : Distance in meters
+//    Row 2 : Distance in feet
+//    Row 3 : Sensitivity
+//    Row 4 : Power bar
 static void drawNokiaUI(float distance_m, float distance_ft, float forceHeldN,
                         RodState st, bool biteBanner, uint8_t sensitivity) {
   display.clearDisplay();
@@ -359,7 +365,7 @@ static void resetModel() {
 
 void setup() {
   Serial.begin(115200);
-  
+
   // ADDED: Bluetooth Init
   SerialBT.begin("CyberFish_Rod"); 
 
@@ -500,15 +506,28 @@ void loop() {
     drawNokiaUI(distance_m, distance_ft, forceHold, state, biteBanner, sensIdx);
   }
 
-  // ADDED: Bluetooth Transmission Block
+  // -------------------- Bluetooth Debug & Transmission --------------------
   if (now - lastBtTxMs >= BT_TX_INTERVAL) {
     lastBtTxMs = now;
+
     if (SerialBT.hasClient()) {
-      SerialBT.print(distance_m, 2);
-      SerialBT.print(",");
-      SerialBT.print(forceHold, 2);
-      SerialBT.print(",");
-      SerialBT.println(stateLabel(state, (now < biteBannerUntil)));
+      // If a phone is connected, send data to App and Serial Monitor
+      String dataPackage = String(distance_m, 2) + "," + 
+                           String(forceHold, 2) + "," + 
+                           stateLabel(state, (now < biteBannerUntil));
+
+      SerialBT.println(dataPackage); // Send to App
+      
+      Serial.print("[BT SENDING]: "); // Feedback for Serial Monitor
+      Serial.println(dataPackage);
+    } 
+    else {
+      // If no phone is connected, let the Serial Monitor know
+      static unsigned long lastNotify = 0;
+      if (now - lastNotify > 5000) { // Only print every 5 seconds so it doesn't spam
+        Serial.println("[BT STATUS]: Waiting for App to connect...");
+        lastNotify = now;
+      }
     }
   }
 
