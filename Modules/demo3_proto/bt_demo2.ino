@@ -306,9 +306,10 @@ void loop() {
       // This matches the "Split" logic in your App Inventor blocks
       String packet = String(dist_ft, 1) + "," + 
                       String(forceHold, 2) + "," + 
-                      stateLabel(state, (now < biteBannerUntil));
-
-      SerialBT.println(packet); // Send with newline \n
+                      stateLabel(state, (now < biteBannerUntil)) + "," +
+                      sensLabel(sensIdx) + "," +
+                      String(piezoSpike) + "," +
+                      String(dist_m, 1);
       
       // Feedback for debugging in Serial Monitor
       Serial.print("[BT SENDING]: ");
