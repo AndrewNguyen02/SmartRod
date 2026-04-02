@@ -10,7 +10,9 @@
 // ==================== Bluetooth Configuration ====================
 BluetoothSerial SerialBT; 
 unsigned long lastBtTxMs = 0;
-const unsigned long BT_TX_INTERVAL = 200; // Updated to 5Hz for smoother app updates
+// Set to 200ms (5Hz). This is fast enough for real-time bite detection 
+// but prevents overloading the phone's buffer.
+const unsigned long BT_TX_INTERVAL = 50; 
 
 // ==================== State Machine ====================
 enum RodState : uint8_t { ARMED = 0, CASTING = 1, WAIT_BITE = 2 };
@@ -302,14 +304,14 @@ void loop() {
     lastBtTxMs = now;
 
     if (SerialBT.hasClient()) {
-      // Create the data package: Distance,Force,State
-      // This matches the "Split" logic in your App Inventor blocks
-      String packet = String(dist_ft, 1) + "," + 
-                      String(forceHold, 2) + "," + 
+      String packet = String(forceHold, 2) + "," + 
+                      String(dist_ft, 1) + "," + 
                       stateLabel(state, (now < biteBannerUntil)) + "," +
                       sensLabel(sensIdx) + "," +
                       String(piezoSpike) + "," +
                       String(dist_m, 1);
+
+      SerialBT.println(packet); 
       
       // Feedback for debugging in Serial Monitor
       Serial.print("[BT SENDING]: ");
